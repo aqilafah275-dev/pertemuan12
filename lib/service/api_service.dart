@@ -5,33 +5,16 @@ import 'package:http_parser/http_parser.dart';
 import '../model/Product.dart';
 
 class ApiService {
-  // SILAKAN SESUAIKAN IP ADDRESS BERIKUT DENGAN IP LAPTOP KAMU
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
-  static const String storageUrl = 'http://127.0.0.1:8000/storage';
+ static const String baseUrl = 'http://localhost:8000/api';
+static const String storageUrl = 'http://localhost:8000/storage';
 
   static String getImageUrl(String? imagePath) {
-    if (imagePath == null || imagePath.isEmpty) return '';
-
-    String cleanPath = imagePath;
-
-    if (cleanPath.startsWith('public/')) {
-      cleanPath = cleanPath.substring(7);
-    }
-
-    while (cleanPath.contains('products/products/')) {
-      cleanPath = cleanPath.replaceAll('products/products/', 'products/');
-    }
-
-    print('Cleaning image path:');
-    print('  Original: $imagePath');
-    print('  Cleaned: $cleanPath');
-    print('  Final Url: $storageUrl/$cleanPath');
-
-    String base = storageUrl.endsWith('/') ? storageUrl : '$storageUrl/';
-    String path = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath;
-
-    return base + path;
+  if (imagePath == null || imagePath.isEmpty) {
+    return '';
   }
+
+  return '$storageUrl/$imagePath';
+}
 
   // GET ALL PRODUCTS
   static Future<List<Product>> getProducts() async {

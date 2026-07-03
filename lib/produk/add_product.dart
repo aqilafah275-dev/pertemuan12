@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../service/api_service.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -14,7 +18,29 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _descController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
+  
+  File? _imageFile;
+  Uint8List? _webImageBytes;
   bool _isSaving = false;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      if (kIsWeb) {
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _webImageBytes = bytes;
+          _imageFile = File(pickedFile.path);
+        });
+      } else {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    }
+  }
 
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
@@ -24,6 +50,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
+      // Menggunakan fungsi createProduct dari ApiService versi perbaikan
       await ApiService.createProduct(
         name: _nameController.text,
         descriptions: _descController.text,
@@ -33,14 +60,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Produk berhasil ditambahkan!'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Produk berhasil disimpan!'), backgroundColor: Colors.green),
         );
-        Navigator.pop(context, true); // Kembali ke halaman list dan memicu refresh
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menambahkan produk: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Gagal menyimpan: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -65,7 +92,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Produk Baru'),
+        title: const Text('Tambah Product'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -92,16 +119,31 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _priceController,
-                      decoration: const InputDecoration(labelText: 'Harga (Rp)', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'Harga', border: OutlineInputBorder()),
                       keyboardType: TextInputType.number,
                       validator: (value) => value == null || value.isEmpty ? 'Harga tidak boleh kosong' : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _stockController,
-                      decoration: const InputDecoration(labelText: 'Jumlah Stok', border: OutlineInputBorder()),
+                      decoration: const InputDecoration(labelText: 'Stok', border: OutlineInputBorder()),
                       keyboardType: TextInputType.number,
                       validator: (value) => value == null || value.isEmpty ? 'Stok tidak boleh kosong' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Preview Gambar yang dipilih
+                    Center(
+                      child: _imageFile == null
+                          ? const Text('Belum ada gambar terpilih.')
+                          : kIsWeb
+                              ? (_webImageBytes != null ? Image.memory(_webImageBytes!, height: 150) : const SizedBox())
+                              : Image.file(_imageFile!, height: 150),
+                    ),
+                    TextButton.icon(
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.image),
+                      label: const Text('Pilih Gambar'),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
@@ -111,7 +153,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('Simpan Produk', style: TextStyle(fontSize: 16)),
+                      child: const Text('Simpan Produk'),
                     ),
                   ],
                 ),

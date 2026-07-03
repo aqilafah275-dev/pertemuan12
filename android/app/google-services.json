@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "641522497880",
+    "project_id": "uas-mobile-programming-d1c81",
+    "storage_bucket": "uas-mobile-programming-d1c81.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:641522497880:android:c50cbb9ae950c433608d2d",
+        "android_client_info": {
+          "package_name": "com.example.pertemuan12"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGor_ktMR1EqXPL5ykHZipij9i25PYIJ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

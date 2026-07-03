@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../model/Product.dart';
 import '../service/api_service.dart';
+import 'edit_product.dart';
+import 'detail_product.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -114,31 +116,105 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         itemBuilder: (context, index) {
                           final product = _products[index];
                           return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                            child: ListTile(
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: CachedNetworkImage(
-                                  imageUrl: ApiService.getImageUrl(product.image),
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => const CircularProgressIndicator(),
-                                  errorWidget: (context, url, error) => const Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                                title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(_formatPrice(product.price), style: const TextStyle(color: Colors.green)),
-                                  Text(product.stockStatus, style: TextStyle(color: product.stockColor)),
-                                ],
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteProduct(product),
-                              ),
+  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+  child: ListTile(
+    onTap: () async {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DetailProductScreen(
+            product: product,
+          ),
+        ),
+      );
+
+      _fetchProducts();
+    },
+
+    leading: ClipRRect(
+  borderRadius: BorderRadius.circular(8),
+  child: Image.network(
+    ApiService.getImageUrl(product.image),
+    width: 50,
+    height: 50,
+    fit: BoxFit.cover,
+
+    loadingBuilder: (context, child, loadingProgress) {
+      if (loadingProgress == null) return child;
+
+      return const SizedBox(
+        width: 50,
+        height: 50,
+        child: Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    },
+
+    errorBuilder: (context, error, stackTrace) {
+      print("ERROR IMAGE : $error");
+      print(ApiService.getImageUrl(product.image));
+
+      return const Icon(
+        Icons.broken_image,
+        color: Colors.red,
+        size: 40,
+      );
+    },
+  ),
+),
+
+    title: Text(
+      product.name,
+      style: const TextStyle(fontWeight: FontWeight.bold),
+    ),
+
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _formatPrice(product.price),
+          style: const TextStyle(color: Colors.green),
+        ),
+        Text(
+          product.stockStatus,
+          style: TextStyle(color: product.stockColor),
+        ),
+      ],
+    ),
+                              trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                    children: [
+
+    IconButton(
+      icon: const Icon(
+        Icons.edit,
+        color: Colors.blue,
+      ),
+      onPressed: () {
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EditProductScreen(
+              product: product,
+            ),
+          ),
+        ).then((_) => _fetchProducts());
+
+      },
+    ),
+
+    IconButton(
+      icon: const Icon(
+        Icons.delete,
+        color: Colors.red,
+      ),
+      onPressed: () => _deleteProduct(product),
+    ),
+
+  ],
+),
                             ),
                           );
                         },
